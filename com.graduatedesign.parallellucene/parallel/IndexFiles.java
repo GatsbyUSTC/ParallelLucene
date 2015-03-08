@@ -1,0 +1,5 @@
+package parallel;
+
+class IndexFiles {
+
+}

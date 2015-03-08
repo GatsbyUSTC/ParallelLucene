@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="com.graduatedesign.parallellucene"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="C:/Users/Gatsby/Documents/workplace/lucene-5.0.0/core/lucene-core-5.0.0.jar" sourcepath="C:/Users/Gatsby/Documents/workplace/lucene-5.0.0-src"/>
+	<classpathentry kind="lib" path="C:/Users/Gatsby/Documents/workplace/lucene-5.0.0/memory/lucene-memory-5.0.0.jar" sourcepath="C:/Users/Gatsby/Documents/workplace/lucene-5.0.0-src"/>
+	<classpathentry kind="lib" path="C:/Users/Gatsby/Documents/workplace/lucene-5.0.0/demo/lucene-demo-5.0.0.jar" sourcepath="C:/Users/Gatsby/Documents/workplace/lucene-5.0.0-src"/>
+	<classpathentry kind="lib" path="C:/Users/Gatsby/Documents/workplace/lucene-5.0.0/analysis/common/lucene-analyzers-common-5.0.0.jar" sourcepath="C:/Users/Gatsby/Documents/workplace/lucene-5.0.0-src"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
