@@ -46,8 +46,12 @@ class BlogDealer {
 			String content = PassHtmlUtils.filterHtml(stringBuffer.substring(start, end));
 			content = content.replaceAll(" ", "");
 			content = content.replaceAll("	", "");
-			content = content.replaceAll("&nbsp;", "");
-			System.out.println("content :" + content);
+			content = content.replaceAll("&nbsp;", " ");
+			content = content.replaceAll("&gt", ">");
+			content = content.replaceAll("&lt", "<"); 
+			content = content.replaceAll("&quot", "\"");
+			content = content.replaceAll("&ampi", "&");
+			//System.out.println("content :" + content);
 			if((start = stringBuffer.indexOf("<title>")) == -1){
 				bufferedReader.close();
 				return null;
@@ -57,7 +61,7 @@ class BlogDealer {
 				return null;
 			}
 			String title = stringBuffer.substring(start+7, end);
-			System.out.println("title :" + title);
+			//System.out.println("title :" + title);
 			bufferedReader.close();
 			return new Blog(title, null, content);
 		} catch (UnsupportedEncodingException e) {
