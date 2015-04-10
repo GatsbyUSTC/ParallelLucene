@@ -3,10 +3,9 @@
  */
 package parallel;
 
-import java.awt.List;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.ArrayList;
+import java.util.concurrent.CountDownLatch;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -19,44 +18,29 @@ import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 
-/**
- * @author Gatsby
- *
- */
+
+
 public class ParallelIndexFiles implements Runnable {
-	private int startDocNum, endDocNum;
-	private String IndexPath;
-	private static final String ParentIndexPath = "C:/Users/Gatsby/Documents/LuceneIndex/Thread";
 	
-	public ParallelIndexFiles(int startDocNum, int endDocNum, int threadNum) {
-		// TODO Auto-generated constructor stub
+	private CountDownLatch startSig, endSig;
+	private int startDocNum, endDocNum;
+	private int threadId;
+	private String IndexPath;
+	
+	
+	public ParallelIndexFiles(int startDocNum, int endDocNum, int threadId, CountDownLatch startSig, CountDownLatch endSig) {
 		this.startDocNum = startDocNum;
 		this.endDocNum = endDocNum;
-		this.IndexPath = ParentIndexPath + threadNum;
-	}
-	
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		int threadNum = 3;
-		int totalDocNum = 3000;
-		int eachDocNum = totalDocNum / threadNum;
-		
-		ArrayList<ParallelIndexFiles> threads = new ArrayList<ParallelIndexFiles>();
-		for(int i=0, s = 1, e = eachDocNum;i < threadNum;i++){
-			threads.add(new ParallelIndexFiles(s, e, i));
-			s += eachDocNum;
-			e += eachDocNum;
-		}
-		for(int i=0;i < threadNum;i++){
-			threads.get(i).run();
-		}
-		
+		this.threadId = threadId;
+		this.startSig = startSig;
+		this.endSig = endSig;
+		this.IndexPath = MainThread.ParentIndexPath + "/Thread" + threadId;
 	}
 	
 	@Override
 	public void run() {
-		// TODO Auto-generated method stub
 		try {
+			startSig.await();
 			Directory dir = FSDirectory.open(Paths.get(IndexPath));
 			Analyzer analyzer = new StandardAnalyzer();
 			IndexWriterConfig iwc = new IndexWriterConfig(analyzer);
@@ -79,9 +63,14 @@ public class ParallelIndexFiles implements Runnable {
 				}
 			}
 			indexWriter.close();
+			dir.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
+		endSig.countDown();
 	}
 }
