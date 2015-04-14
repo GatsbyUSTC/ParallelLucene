@@ -18,25 +18,22 @@ import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 
-
-
 public class ParallelIndexFiles implements Runnable {
-	
+
 	private CountDownLatch startSig, endSig;
-	private int startDocNum, endDocNum;
+	private BlogReader blogReader;
 	private int threadId;
 	private String IndexPath;
-	
-	
-	public ParallelIndexFiles(int startDocNum, int endDocNum, int threadId, CountDownLatch startSig, CountDownLatch endSig) {
-		this.startDocNum = startDocNum;
-		this.endDocNum = endDocNum;
+
+	public ParallelIndexFiles(BlogReader blogReader, int threadId,
+			CountDownLatch startSig, CountDownLatch endSig) {
+		this.blogReader = blogReader;
 		this.threadId = threadId;
 		this.startSig = startSig;
 		this.endSig = endSig;
 		this.IndexPath = MainThread.ParentIndexPath + "/Thread" + threadId;
 	}
-	
+
 	@Override
 	public void run() {
 		try {
@@ -46,11 +43,10 @@ public class ParallelIndexFiles implements Runnable {
 			IndexWriterConfig iwc = new IndexWriterConfig(analyzer);
 			iwc.setOpenMode(OpenMode.CREATE);
 			IndexWriter indexWriter = new IndexWriter(dir, iwc);
-			BlogDealer blogDealer = new BlogDealer();
-
-			for (int i = startDocNum; i < endDocNum; i++) {
-				Blog blog = blogDealer.getBlog(i);
-				if (blog != null) {
+			StringBuffer stringBuffer;
+			Blog blog;
+			while((stringBuffer = blogReader.getNextBuffer()) != null) {
+				if ((blog = BlogDealer.dealblog(stringBuffer)) != null) {
 					Document document = new Document();
 					TextField titleField = new TextField("title",
 							blog.getTitle(), Store.NO);
@@ -58,7 +54,7 @@ public class ParallelIndexFiles implements Runnable {
 					TextField contentField = new TextField("content",
 							blog.getContent(), Store.NO);
 					document.add(contentField);
-					//System.out.println("indexing " + i + " blog");
+					// System.out.println("indexing " + i + " blog");
 					indexWriter.addDocument(document);
 				}
 			}
