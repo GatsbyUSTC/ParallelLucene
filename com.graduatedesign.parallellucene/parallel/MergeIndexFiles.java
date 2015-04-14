@@ -16,7 +16,7 @@ public class MergeIndexFiles {
 	private String TotalIndexPath;
 	public MergeIndexFiles() {
 		// TODO Auto-generated constructor stub
-		TotalIndexPath = MainThread.ParentIndexPath + "TotalIndex";
+		TotalIndexPath = MainThread.ParentIndexPath + "/TotalIndex";
 	}
 	
 	public void merge(){
@@ -27,9 +27,9 @@ public class MergeIndexFiles {
 			IndexWriterConfig iwc = new IndexWriterConfig(analyzer);
 			iwc.setOpenMode(OpenMode.CREATE);
 			IndexWriter indexWriter = new IndexWriter(dir, iwc);
-			Directory[] directorys = new Directory[MainThread.THREADNUM]; 
-			for(int i=0;i < MainThread.THREADNUM;i++){
-				String tempPath = MainThread.ParentIndexPath + "Thread" + i;
+			Directory[] directorys = new Directory[MainThread.ThreadNum]; 
+			for(int i=0;i < MainThread.ThreadNum;i++){
+				String tempPath = MainThread.ParentIndexPath + "/Thread" + i;
 				Directory tempDir = FSDirectory.open(Paths.get(tempPath));
 				directorys[i] = tempDir;
 			}
