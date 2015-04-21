@@ -6,6 +6,8 @@ package parallel;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -18,16 +20,19 @@ import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 
+
 public class ParallelIndexFiles implements Runnable {
 
 	private CountDownLatch startSig, endSig;
 	private BlogReader blogReader;
 	private int threadId;
 	private String IndexPath;
+	private LinkedBlockingQueue<StringBuffer> queue;
 
-	public ParallelIndexFiles(BlogReader blogReader, int threadId,
+	public ParallelIndexFiles(BlogReader blogReader, LinkedBlockingQueue<StringBuffer> queue, int threadId,
 			CountDownLatch startSig, CountDownLatch endSig) {
 		this.blogReader = blogReader;
+		this.queue = queue;
 		this.threadId = threadId;
 		this.startSig = startSig;
 		this.endSig = endSig;
@@ -45,7 +50,10 @@ public class ParallelIndexFiles implements Runnable {
 			IndexWriter indexWriter = new IndexWriter(dir, iwc);
 			StringBuffer stringBuffer;
 			Blog blog;
-			while((stringBuffer = blogReader.getNextBuffer()) != null) {
+			while(!queue.isEmpty()) {
+				stringBuffer = queue.take();
+				if(stringBuffer.equals(new StringBuffer("End of Queue")))
+					break;
 				if ((blog = BlogDealer.dealblog(stringBuffer)) != null) {
 					Document document = new Document();
 					TextField titleField = new TextField("title",

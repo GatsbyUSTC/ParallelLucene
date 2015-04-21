@@ -17,14 +17,22 @@ class BlogReader {
 		curdocnum = 0;
 	}
 
-	public synchronized StringBuffer getNextBuffer() {
-		if (curdocnum < MainThread.DOCNUM) {
-			curdocnum++;
-			return getBlog(curdocnum);
-		}
+	public StringBuffer getNextBuffer() {
+		int nextdocnum = getNextDocNum();
+		if(nextdocnum != 0 )
+			return getBlog(nextdocnum);
 		return null;
 	}
 
+	public int getNextDocNum(){
+		if (curdocnum < MainThread.DOCNUM) {
+			curdocnum++;
+			System.out.println(curdocnum);
+			return curdocnum;
+		}
+		return 0;
+	}
+	
 	private StringBuffer getBlog(int blogNumber) {
 
 		String Path = "C:/Users/Gatsby/Documents/LoalaSave/blog.sina.com.cn/"

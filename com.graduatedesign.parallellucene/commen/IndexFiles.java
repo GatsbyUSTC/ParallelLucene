@@ -17,7 +17,7 @@ import org.apache.lucene.store.FSDirectory;
 class IndexFiles {
 
 	public static final String IndexPath = "C:/Users/Gatsby/Documents/LuceneIndex";
-	private static final int docNumber = 10000;
+	private static final int docNumber = 8000;
 
 	public static void main(String[] args) {
 		IndexFiles indexFiles = new IndexFiles();
