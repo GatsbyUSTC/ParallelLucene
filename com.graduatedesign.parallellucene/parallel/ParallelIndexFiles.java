@@ -4,11 +4,8 @@
 package parallel;
 
 import java.io.IOException;
-import java.nio.file.Paths;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
-
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
@@ -18,32 +15,31 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.store.RAMDirectory;
 
 
 public class ParallelIndexFiles implements Runnable {
 
 	private CountDownLatch startSig, endSig;
-	private BlogReader blogReader;
 	private int threadId;
-	private String IndexPath;
-	private LinkedBlockingQueue<StringBuffer> queue;
+	private ConcurrentLinkedQueue<StringBuffer> queue;
+	private RAMDirectory dir;
+	private IndexWriter fsWriter;
 
-	public ParallelIndexFiles(BlogReader blogReader, LinkedBlockingQueue<StringBuffer> queue, int threadId,
+	public ParallelIndexFiles(ConcurrentLinkedQueue<StringBuffer> queue, int threadId, IndexWriter fsWriter,
 			CountDownLatch startSig, CountDownLatch endSig) {
-		this.blogReader = blogReader;
 		this.queue = queue;
 		this.threadId = threadId;
 		this.startSig = startSig;
 		this.endSig = endSig;
-		this.IndexPath = MainThread.ParentIndexPath + "/Thread" + threadId;
+		this.dir = new RAMDirectory();
+		this.fsWriter = fsWriter;
 	}
 
 	@Override
 	public void run() {
 		try {
 			startSig.await();
-			Directory dir = FSDirectory.open(Paths.get(IndexPath));
 			Analyzer analyzer = new StandardAnalyzer();
 			IndexWriterConfig iwc = new IndexWriterConfig(analyzer);
 			iwc.setOpenMode(OpenMode.CREATE);
@@ -51,7 +47,7 @@ public class ParallelIndexFiles implements Runnable {
 			StringBuffer stringBuffer;
 			Blog blog;
 			while(!queue.isEmpty()) {
-				stringBuffer = queue.take();
+				stringBuffer = queue.remove();
 				if(stringBuffer.equals(new StringBuffer("End of Queue")))
 					break;
 				if ((blog = BlogDealer.dealblog(stringBuffer)) != null) {
@@ -67,6 +63,7 @@ public class ParallelIndexFiles implements Runnable {
 				}
 			}
 			indexWriter.close();
+			fsWriter.addIndexes(new Directory[]{dir});
 			dir.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

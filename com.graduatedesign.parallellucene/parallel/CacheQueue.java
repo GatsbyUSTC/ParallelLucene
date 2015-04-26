@@ -1,28 +1,26 @@
 package parallel;
 
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.LinkedBlockingQueue;
 
 public class CacheQueue implements Runnable {
-	private LinkedBlockingQueue<StringBuffer> cacheQueue;
+	private ConcurrentLinkedQueue<StringBuffer> cacheQueue;
 	private CountDownLatch startSig;
-	public CacheQueue(LinkedBlockingQueue<StringBuffer> queue, CountDownLatch startSig){
+	private int cacheDocNum;
+	
+	public CacheQueue(ConcurrentLinkedQueue<StringBuffer> queue, CountDownLatch sig, int num){
 		cacheQueue = queue;
-		this.startSig = startSig;
+		startSig = sig;
+		cacheDocNum = num;
 	}
+	
 	@Override
 	public void run() {
 		BlogReader blogReader = new BlogReader();
-		StringBuffer buffer;
-		while((buffer = blogReader.getNextBuffer()) != null ){ 
-			try {
-				cacheQueue.put(buffer);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+		for(int i=1;i <= cacheDocNum;i++){ 
+			cacheQueue.add(blogReader.getBlog(i));
+			System.out.println(i);
 		}
 		startSig.countDown();
-		System.out.println("read in");
 	}
 }
