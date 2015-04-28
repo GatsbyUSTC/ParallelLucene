@@ -4,7 +4,6 @@
 package parallel;
 
 import java.io.IOException;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -17,18 +16,17 @@ import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.RAMDirectory;
 
-
 public class ParallelIndexFiles implements Runnable {
 
 	private CountDownLatch startSig, endSig;
 	private int threadId;
-	private ConcurrentLinkedQueue<StringBuffer> queue;
+	private int docForEach;
 	private RAMDirectory dir;
 	private IndexWriter fsWriter;
 
-	public ParallelIndexFiles(ConcurrentLinkedQueue<StringBuffer> queue, int threadId, IndexWriter fsWriter,
-			CountDownLatch startSig, CountDownLatch endSig) {
-		this.queue = queue;
+	public ParallelIndexFiles(int docForEach, int threadId,
+			IndexWriter fsWriter, CountDownLatch startSig, CountDownLatch endSig) {
+		this.docForEach = docForEach;
 		this.threadId = threadId;
 		this.startSig = startSig;
 		this.endSig = endSig;
@@ -44,26 +42,26 @@ public class ParallelIndexFiles implements Runnable {
 			IndexWriterConfig iwc = new IndexWriterConfig(analyzer);
 			iwc.setOpenMode(OpenMode.CREATE);
 			IndexWriter indexWriter = new IndexWriter(dir, iwc);
-			StringBuffer stringBuffer;
-			Blog blog;
-			while(!queue.isEmpty()) {
-				stringBuffer = queue.remove();
-				if(stringBuffer.equals(new StringBuffer("End of Queue")))
-					break;
-				if ((blog = BlogDealer.dealblog(stringBuffer)) != null) {
+		
+			int startdocnum = docForEach * threadId + 1;
+			int enddocnum = (docForEach + 1) * threadId;
+			for (int i = startdocnum; i < enddocnum; i++) {
+				StringBuffer stringBuffer = BlogReader.getBlog(i);
+				Blog blog = BlogDealer.dealblog(stringBuffer);
+				if (blog != null) {
 					Document document = new Document();
 					TextField titleField = new TextField("title",
-							blog.getTitle(), Store.NO);
+							blog.getTitle(), Store.YES);
 					document.add(titleField);
 					TextField contentField = new TextField("content",
-							blog.getContent(), Store.NO);
+							blog.getContent(), Store.YES);
 					document.add(contentField);
 					// System.out.println("indexing " + i + " blog");
 					indexWriter.addDocument(document);
 				}
 			}
 			indexWriter.close();
-			fsWriter.addIndexes(new Directory[]{dir});
+			fsWriter.addIndexes(new Directory[] { dir });
 			dir.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

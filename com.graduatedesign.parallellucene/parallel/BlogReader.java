@@ -33,7 +33,7 @@ class BlogReader {
 		return 0;
 	}
 	
-	public StringBuffer getBlog(int blogNumber) {
+	public static StringBuffer getBlog(int blogNumber) {
 
 		String Path = "C:/Users/Gatsby/Documents/LoalaSave/blog.sina.com.cn/"
 				+ blogNumber;
