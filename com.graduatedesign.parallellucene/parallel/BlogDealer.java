@@ -47,6 +47,7 @@ class BlogDealer {
 			content = content.replaceAll(" ", "");
 			content = content.replaceAll("	", "");
 			content = content.replaceAll("&nbsp;", "");
+			System.out.println("content :" + content);
 			if((start = stringBuffer.indexOf("<title>")) == -1){
 				bufferedReader.close();
 				return null;
@@ -56,6 +57,7 @@ class BlogDealer {
 				return null;
 			}
 			String title = stringBuffer.substring(start+7, end);
+			System.out.println("title :" + title);
 			bufferedReader.close();
 			return new Blog(title, null, content);
 		} catch (UnsupportedEncodingException e) {

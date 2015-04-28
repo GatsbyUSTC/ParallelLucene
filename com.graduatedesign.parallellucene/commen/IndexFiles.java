@@ -17,7 +17,7 @@ import org.apache.lucene.store.FSDirectory;
 class IndexFiles {
 
 	public static final String IndexPath = "C:/Users/Gatsby/Documents/LuceneIndex";
-	private static final int DocumentNum = 10000;
+	private static final int docNumber = 3000;
 
 	public static void main(String[] args) {
 		IndexFiles indexFiles = new IndexFiles();
@@ -38,7 +38,7 @@ class IndexFiles {
 			IndexWriter indexWriter = new IndexWriter(dir, iwc);
 			BlogDealer blogDealer = new BlogDealer();
 
-			for (int i = 1; i < DocumentNum; i++) {
+			for (int i = 1; i < docNumber; i++) {
 				Blog blog = blogDealer.getBlog(i);
 				if (blog != null) {
 					Document document = new Document();
